@@ -1,0 +1,26 @@
+{
+  "name": "iotexdelegateshealthbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IoTeXLab/IoTeXDelegatesHealthBot.git"
+  },
+  "author": "Simone Romano",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/IoTeXLab/IoTeXDelegatesHealthBot/issues"
+  },
+  "homepage": "https://github.com/IoTeXLab/IoTeXDelegatesHealthBot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
+    "iotex-antenna": "^0.31.0-beta-rlp-17"
+  }
+}
