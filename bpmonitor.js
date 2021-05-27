@@ -176,14 +176,20 @@ function updateEpoch(epoch) {
         // New epoch, reset data
         let slow=slowProducers.length;
         let stuck = stuckProducers.length;
-        let slowNotStuck = slow - stuck;
+        let pastEpoch = currentEpoch;
+
+        slowProducers = [];
+        stuckProducers = [];
+        currentEpoch = epoch;
+        
+        if (pastEpoch == 0) return;
+        
+        // Show some logs for past epoch
         if (!slow && !stuck) console.log("✅✅ Epoch "+currentEpoch+" ended without issues.");
         else if (slow && !stuck) console.log("🐌 🐌 Epoch "+currentEpoch+" ended with "+slow+" slow producers.");
         else if (stuck && (slow == stuck)) console.log("💀 💀 Epoch "+currentEpoch+" ended with "+stuck+" stuck producers.");
         else console.log("💀 🐌 Epoch " + currentEpoch + " ended with " + stuckProducers.length + " stuck and " + slowProducers.length + " slow producers");
-        slowProducers = [];
-        stuckProducers = [];
-        currentEpoch = epoch;
+     
     }
 }
 
