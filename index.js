@@ -1,7 +1,9 @@
-const Discord = require("discord.js")
+const Discord = require("discord.js");
+const { getNamedType } = require("graphql");
 require('dotenv').config()
 const client = new Discord.Client()
 const monitor = require("./bpmonitor.js");
+const moment = require("moment");
 
 // starts the Block Producers monitor, polling every 10 seconds
 monitor.Start(10);
@@ -36,6 +38,22 @@ client.login(process.env.DISCORD_TOKEN)
 notifySlow();
 notifyStuck();
 
+function genMessage(producer, status) {
+  let msg = "";
+  msg += "**"+producer.registeredName + "** is "+ status +"\n";
+  msg += "```";
+  msg += moment().format('MMMM Do YYYY, h:mm:ss a') + "\n";
+  msg += "Current Epoch : " + monitor.GetEpoch() + "\n";
+  msg += "Current Height: " + monitor.GetHeight() + "\n\n";
+  msg += "Production: " + producer.production + "\n";
+  msg += "Expected  : " + monitor.GetExpectedProduction() + "\n";
+  msg += "________________________\n";
+  msg += "```";
+
+  return msg;
+}
+
+
 function notifySlow() {
   if (monitor.SlowProducers().length == 0) {
     setTimeout(notifySlow,5 * 1000);
@@ -43,7 +61,7 @@ function notifySlow() {
   }
   let slow = monitor.SlowProducers().filter( p => p.notified != true);
   slow.forEach(b => {
-    channel.send("🐌 **"+b.registeredName + "** is slow - this is a test"); 
+    channel.send(genMessage(b, "SLOW 🐌"));
     monitor.SetSlowNotified(b);
   });
   setTimeout(notifySlow,5 * 1000);
@@ -56,7 +74,7 @@ function notifyStuck() {
   }
   let slow = monitor.StuckProducers().filter( p => p.notified != true);
   slow.forEach(b => {
-    channel.send("💀 **"+b.registeredName + "** is stuck! - this is a test"); 
+    channel.send(genMessage(b, "STUCK 💀"));
     monitor.SetStuckNotified(b);
   });
   setTimeout(notifyStuck,5 * 1000);

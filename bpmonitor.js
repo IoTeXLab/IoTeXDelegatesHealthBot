@@ -4,14 +4,19 @@ const {	GraphQLClient } = require("graphql-request");
 require('dotenv').config();
 
 var updateProductionInterval;
+var expectedProduction;
 
 let updating = false;
 let currentEpoch = 0;
+let currentHeight = 0;
 let bpCandidates = [];
 let stuckProducers = [];
 let slowProducers = []; 
 
 exports.Start = StartPolling;
+exports.GetExpectedProduction = GetExpectedProduction;
+exports.GetEpoch = () => {return currentEpoch};
+exports.GetHeight = () => {return currentHeight};
 exports.SlowProducers = GetSlowProducers;
 exports.StuckProducers = GetStuckProducers;
 exports.SetSlowNotified = setSlowNotified;
@@ -49,6 +54,10 @@ function GetBlockProducersMsg() {
     return reply + "```";
 }
 
+function GetExpectedProduction() {
+    return expectedProduction;
+}
+
 function GetSlowProducers() {
     return slowProducers;
 }
@@ -76,7 +85,7 @@ function GetStuckProducersMsg() {
 async function updateBlockProducers() {
     try {
         let chainMeta = (await antenna.iotx.getChainMeta()).chainMeta;
-        updateEpoch(chainMeta.epoch.num);	
+        updateEpochData(chainMeta);	
 
         // Query production data
         let epochMeta = (await antenna.iotx.getEpochMeta({ epochNumber: currentEpoch}));	
@@ -97,7 +106,7 @@ async function updateBlockProducers() {
         }
 
         // Find slow and stuck delegates
-        let maxProduction = Math.round(epochMeta.totalBlocks / 24);
+        expectedProduction = Math.round(epochMeta.totalBlocks / 24);
 
         for (var i=0; i<36; i++) {
             let delegate = bpCandidates[i];
@@ -107,14 +116,14 @@ async function updateBlockProducers() {
             delegate.isStuck = false;
             
             // Test olny:
-            // if (delegate.registeredName == "metanyx") delegate.production = maxProduction -2;	
-            // if (delegate.registeredName == "longz") delegate.production = maxProduction -2;	
-            // if (delegate.registeredName == "iotexlab") delegate.production = maxProduction -6;			
+             if (delegate.registeredName == "metanyx") delegate.production = expectedProduction -2;	
+             if (delegate.registeredName == "gamefantasy") delegate.production = expectedProduction -2;	
+             if (delegate.registeredName == "iotexlab") delegate.production = expectedProduction -6;			
             // End Test
             
-            if (delegate.production < maxProduction - 5) {
+            if (delegate.production < expectedProduction - 5) {
                 setStuck(delegate);				
-            } else if (delegate.production < maxProduction - 1) {
+            } else if (delegate.production < expectedProduction - 1) {
                 setslow(delegate);							
             }					
         };
@@ -171,7 +180,9 @@ function StartPolling(interval = 10) {
 	}	
 }
 
-function updateEpoch(epoch) {
+function updateEpochData(chainMeta) {
+    currentHeight = chainMeta.height;
+    let epoch = chainMeta.epoch.num;
     if (epoch != currentEpoch) {
         // New epoch, reset data
         let slow=slowProducers.length;
