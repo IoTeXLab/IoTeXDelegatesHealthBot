@@ -46,7 +46,7 @@ function GetBlockProducersMsg() {
     let count = 1;
     let reply = "```";
     bpCandidates.forEach((b)=> {
-        if (count<36) {
+        if (count<=36) {
           reply += delegateToString(count, b);
           count++;
         }
