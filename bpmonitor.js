@@ -74,51 +74,55 @@ function GetStuckProducersMsg() {
 }
 
 async function updateBlockProducers() {
+    try {
+        let chainMeta = (await antenna.iotx.getChainMeta()).chainMeta;
+        updateEpoch(chainMeta.epoch.num);	
 
-    let chainMeta = (await antenna.iotx.getChainMeta()).chainMeta;
-    updateEpoch(chainMeta.epoch.num);	
+        // Query production data
+        let epochMeta = (await antenna.iotx.getEpochMeta({ epochNumber: currentEpoch}));	
+        let blockProducers = epochMeta.blockProducersInfo;
 
-    // Query production data
-    let epochMeta = (await antenna.iotx.getEpochMeta({ epochNumber: currentEpoch}));	
-    let blockProducers = epochMeta.blockProducersInfo;
+        bpCandidates = await getBpCandidates();
 
-    bpCandidates = await getBpCandidates();
+        // Merge production data into delegates info (the first 36 are enough)
+        for (var i=0; i<blockProducers.length; i++) {
+            let bp = blockProducers[i];
+            let delegate = bpCandidates[i];
 
-    // Merge production data to delegates info (the first 36 are enough)
-    for (var i=0; i<blockProducers.length; i++) {
-        let bp = blockProducers[i];
-        let delegate = bpCandidates[i];
+            delegate.active = bp.active;
+            delegate.production = bp.production;
+            delegate.address = bp.address;
+            delegate.votes = bp.votes;
+            delegate.isBlockProducer = true;
+        }
 
-        delegate.active = bp.active;
-        delegate.production = bp.production;
-        delegate.address = bp.address;
-        delegate.votes = bp.votes;
-        delegate.isBlockProducer = true;
+        // Find slow and stuck delegates
+        let maxProduction = Math.round(epochMeta.totalBlocks / 24);
+
+        for (var i=0; i<36; i++) {
+            let delegate = bpCandidates[i];
+            if (delegate.active == false) continue;
+
+            delegate.isSlow = false;
+            delegate.isStuck = false;
+            
+            // Test olny:
+            // if (delegate.registeredName == "metanyx") delegate.production = maxProduction -2;	
+            // if (delegate.registeredName == "longz") delegate.production = maxProduction -2;	
+            // if (delegate.registeredName == "iotexlab") delegate.production = maxProduction -6;			
+            // End Test
+            
+            if (delegate.production < maxProduction - 5) {
+                setStuck(delegate);				
+            } else if (delegate.production < maxProduction - 1) {
+                setslow(delegate);							
+            }					
+        };
+    } catch (ex) {
+        console.log("Exception in updateBlockProducers:\n",ex);
+    } finally {
+        setTimeout(updateBlockProducers, updateProductionInterval)
     }
-
-    // Find slow and stuck delegates
-    let maxProduction = Math.round(epochMeta.totalBlocks / 24);
-
-    for (var i=0; i<36; i++) {
-        let delegate = bpCandidates[i];
-        if (delegate.active == false) continue;
-
-        delegate.isSlow = false;
-        delegate.isStuck = false;
-        // Test oly:
-        // if (delegate.registeredName == "metanyx") delegate.production = maxProduction -2;	
-        // if (delegate.registeredName == "longz") delegate.production = maxProduction -2;	
-        // if (delegate.registeredName == "iotexlab") delegate.production = maxProduction -6;			
-		
-        // End Test
-        if (delegate.production < maxProduction - 5) {
-            setStuck(delegate);				
-        } else if (delegate.production < maxProduction -1) {
-            setslow(delegate);							
-        }					
-    };
-
-    setTimeout(updateBlockProducers, updateProductionInterval)
 }
 
 function setStuck(delegate) {
@@ -194,6 +198,6 @@ async function getBpCandidates() {
 
 		return (await graphQLClient.request(query1)).bpCandidates;
     } catch (ex) {
-        console.log (ex);
+        console.log("Exception in UpdateCandidates:\n",ex);
     }
 }
