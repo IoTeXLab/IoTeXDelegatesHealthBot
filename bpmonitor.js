@@ -116,9 +116,9 @@ async function updateBlockProducers() {
             delegate.isStuck = false;
             
             // Test olny:
-             if (delegate.registeredName == "metanyx") delegate.production = expectedProduction -2;	
-             if (delegate.registeredName == "gamefantasy") delegate.production = expectedProduction -2;	
-             if (delegate.registeredName == "iotexlab") delegate.production = expectedProduction -6;			
+            // if (delegate.registeredName == "metanyx") delegate.production = expectedProduction -2;	
+            // if (delegate.registeredName == "gamefantasy") delegate.production = expectedProduction -2;	
+            // if (delegate.registeredName == "iotexlab") delegate.production = expectedProduction -6;			
             // End Test
             
             if (delegate.production < expectedProduction - 5) {
