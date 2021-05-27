@@ -174,6 +174,13 @@ function StartPolling(interval = 10) {
 function updateEpoch(epoch) {
     if (epoch != currentEpoch) {
         // New epoch, reset data
+        let slow=slowProducers.length;
+        let stuck = stuckProducers.length;
+        let slowNotStuck = slow - stuck;
+        if (!slow && !stuck) console.log("✅✅ Epoch "+currentEpoch+" ended without issues.");
+        else if (slow && !stuck) console.log("🐌 🐌 Epoch "+currentEpoch+" ended with "+slow+" slow producers.");
+        else if (stuck && (slow == stuck)) console.log("💀 💀 Epoch "+currentEpoch+" ended with "+stuck+" stuck producers.");
+        else console.log("💀 🐌 Epoch " + currentEpoch + " ended with " + stuckProducers.length + " stuck and " + slowProducers.length + " slow producers");
         slowProducers = [];
         stuckProducers = [];
         currentEpoch = epoch;
