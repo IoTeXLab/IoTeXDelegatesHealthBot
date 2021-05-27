@@ -39,7 +39,7 @@ notifySlow();
 notifyStuck();
 
 function genMessage(producer, status) {
-  let msg = "";
+  let msg = "________________________\n";
   msg += "**"+producer.registeredName + "** is "+ status +"\n";
   msg += "```";
   msg += moment().format('MMMM Do YYYY, h:mm:ss a') + "\n";
