@@ -28,6 +28,8 @@ client.on("message", msg => {
     case "/slow" : msg.reply(monitor.GetSlowProducersMsg()); break;
     case "/stuck" : msg.reply(monitor.GetStuckProducersMsg()); break;
     case process.env.HackathonRolePassword: 
+      msg.delete(); //Supposed to delete message
+      msg.channel.send("Welcome " + msg.author.toString() +", you have now write access to the <#869998846732816404> channel!\nFeel free to ask any questions or tag an admin.");
       var role = msg.guild.roles.cache.find(role => role.id == HackathonParticipantRoleID);
       if (role) msg.member.roles.add(role);
     default:  break;
