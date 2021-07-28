@@ -1,9 +1,10 @@
 const Discord = require("discord.js");
-const { getNamedType } = require("graphql");
 require('dotenv').config()
 const client = new Discord.Client()
 const monitor = require("./bpmonitor.js");
 const moment = require("moment");
+
+const HackathonParticipantRoleID ="869999422346518588";
 
 // starts the Block Producers monitor, polling every 10 seconds
 monitor.Start(10);
@@ -26,7 +27,9 @@ client.on("message", msg => {
     case "/bp" : msg.reply(monitor.GetBlockProducersMsg()); break;
     case "/slow" : msg.reply(monitor.GetSlowProducersMsg()); break;
     case "/stuck" : msg.reply(monitor.GetStuckProducersMsg()); break;
-
+    case process.env.HackathonRolePassword: 
+      var role = msg.guild.roles.cache.find(role => role.id == HackathonParticipantRoleID);
+      if (role) msg.member.roles.add(role);
     default:  break;
   }
 });
